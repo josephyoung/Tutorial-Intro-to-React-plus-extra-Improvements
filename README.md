@@ -7,12 +7,6 @@ Tutorial offical code and the extra improvemnets at end of the tutorial included
 1. When someone wins, highlight the three squares that caused the win.
 1. When no one wins, display a message about the result being a draw.
 
-- Feb, 11, 2019
-  change to 15 * 15 grid, five-in-a-row to win.
-  Modified css, background and colors of the squares.
-
-- Feb, 12, 2019
-  Add function: Adjusting board size by listen to window resize event.
 ---
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

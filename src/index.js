@@ -34,40 +34,27 @@ class Board extends React.Component {
         }}
         clr={clr}
         bgd={bgd}
-        key={i}
       />
     );
   }
 
   render() {
-    let max_row = this.props.max_square;
-    let max_col = this.props.max_square;
     let element = [],
-      clr,
-      bgd = 'rgb(16, 163, 189)';
-    for (let i = 0; i < max_row * max_col; i += max_col) {
+      clr = 'black',
+      bgd = 'white';
+    for (let i = 0; i < 9; i += 3) {
       let square = [];
-      for (let j = 0; j < max_col; j++) {
-        if (this.props.winnerArray && this.props.winnerArray.includes(i + j)) {
-          clr = 'rgb(223, 54, 82)';
-          bgd = 'yellow';
-        } else if (this.props.squares[i + j] === 'O') {
-          clr = 'black';
-          bgd = 'rgb(16, 163, 189)';
-        } else if (this.props.squares[i + j] === 'X') {
-          clr = 'yellow';
-          bgd = 'rgb(16, 163, 189)';
+      for (let j = 0; j < 3; j++) {
+        if (this.props.winnerList && this.props.winnerList.includes(i + j)) {
+          clr = 'white';
+          bgd = 'black';
         } else {
           clr = 'black';
-          bgd = 'rgb(16, 163, 189)';
+          bgd = 'white';
         }
         square.push(this.renderSquare(i + j, clr, bgd));
       }
-      element.push(
-        <div key={i} className="board-row">
-          {square}
-        </div>
-      );
+      element.push(<div className="board-row">{square}</div>);
     }
     return <div>{element}</div>;
   }
@@ -77,10 +64,9 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      max_square: 10,
       history: [
         {
-          squares: Array(15 * 15).fill(null)
+          squares: Array(9).fill(null)
         }
       ],
       moveListBold: ['normal'],
@@ -89,53 +75,6 @@ class Game extends React.Component {
       stepNumber: 0,
       toggle: false
     };
-  }
-  componentWillMount() {
-    let max_square = 15;
-    let width = window.innerWidth;
-    if (width <= 510) {
-      max_square = 5;
-    } else if (width <= 800) {
-      max_square = 10;
-    }
-    this.listener = window.addEventListener('resize', () => {
-      width = window.innerWidth;
-      if (this.state.iList.length === 1) {
-        if (width <= 510) {
-          max_square = 5;
-        } else if (width <= 800) {
-          max_square = 10;
-        } else {
-          max_square = 15;
-        }
-        this.setState({
-          max_square: max_square,
-          history: [
-            {
-              squares: Array(max_square * max_square).fill(null)
-            }
-          ],
-          moveListBold: ['normal'],
-          iList: [0],
-          xIsNext: true,
-          stepNumber: 0,
-          toggle: false
-        });
-      }
-    });
-
-    this.setState({
-      max_square: max_square,
-      history: [
-        {
-          squares: Array(max_square * max_square).fill(null)
-        }
-      ]
-    });
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.listener);
   }
 
   handleClick(i) {
@@ -148,12 +87,8 @@ class Game extends React.Component {
       0,
       this.state.stepNumber + 1
     );
-    let max_row = this.state.max_square;
-    let max_col = this.state.max_square;
 
-    if (
-      calculateWinner(iList[this.state.stepNumber], max_row, max_col, squares)
-    ) {
+    if (calculateWinner(squares)) {
       return;
     }
     if (squares[i]) return;
@@ -198,55 +133,20 @@ class Game extends React.Component {
     });
   }
 
-  restartGame() {
-    let max_square;
-    const width = window.innerWidth;
-
-    if (width <= 510) {
-      max_square = 5;
-    } else if (width <= 800) {
-      max_square = 10;
-    } else {
-      max_square = 15;
-    }
-    this.setState({
-      max_square: max_square,
-      history: [
-        {
-          squares: Array(max_square * max_square).fill(null)
-        }
-      ],
-      moveListBold: ['normal'],
-      iList: [0],
-      xIsNext: true,
-      stepNumber: 0,
-      toggle: false
-    });
-  }
-
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const currentI = this.state.iList[this.state.iList.length - 1];
-    let max_row = this.state.max_square;
-    let max_col = this.state.max_square;
-    const winnerArray = calculateWinner(
-      currentI,
-      max_row,
-      max_col,
-      current.squares
-    );
+    const winnerList = calculateWinner(current.squares);
 
-    let moves = history.map((step, move) => {
-      let row = Math.floor(this.state.iList[move] / max_col) + 1;
-      let col = (this.state.iList[move] % max_col) + 1;
+    const moves = history.map((step, move) => {
+      let row = Math.floor(this.state.iList[move] / 3) + 1;
+      let col = (this.state.iList[move] % 3) + 1;
       const desc = move
         ? 'Go to move #' + move + ' (' + row + ', ' + col + ')'
         : 'Go to game start';
       return (
         <li key={move}>
           <button
-            className="move-list"
             style={{ fontWeight: this.state.moveListBold[move] }}
             onClick={() => this.jumpTo(move)}
           >
@@ -255,11 +155,10 @@ class Game extends React.Component {
         </li>
       );
     });
-    moves.shift();
 
     let status;
-    if (winnerArray) {
-      status = 'Winner: ' + current.squares[winnerArray[0]];
+    if (winnerList) {
+      status = 'Winner: ' + current.squares[winnerList[0]];
     } else if (current.squares.includes(null)) {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     } else {
@@ -277,17 +176,13 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={i => this.handleClick(i)}
-            winnerArray={winnerArray}
-            max_square={this.state.max_square}
+            winnerList={winnerList}
           />
         </div>
         <div className="game-info">
           <div>{status}</div>
           <ul>
             <button onClick={() => this.toggleReverse()}>Reverse moves</button>
-          </ul>
-          <ul>
-            <button onClick={() => this.restartGame()}>Restart Game</button>
           </ul>
           <ListOrderReverse toggle={this.state.toggle} value={movesShow} />
         </div>
@@ -300,82 +195,22 @@ class Game extends React.Component {
 
 ReactDOM.render(<Game />, document.getElementById('root'));
 
-/*param: 
-        i: Last cliked button index of the squares array;
-        max_row: Maximum rows of grid;
-        max_col: Maximum columns of grid;
-        squares: The square Components array.*/
-function calculateWinner(i, max_row, max_col, squares) {
-  let winnerArray = null;
-  function findUp(i) {
-    return i - max_col >= 0 ? i - max_col : null;
-  }
-
-  function findDown(i) {
-    return i + max_col < max_col * max_row ? i + max_col : null;
-  }
-
-  function findLeft(i) {
-    return i % max_col === 0 ? null : i - 1;
-  }
-
-  function findRight(i) {
-    return i % max_col < max_col - 1 ? i + 1 : null;
-  }
-
-  function findUpLeft(i) {
-    let n = findUp(i);
-    return n ? findLeft(n) : null;
-  }
-
-  function findDownRight(i) {
-    let n = findDown(i);
-    return n ? findRight(n) : null;
-  }
-
-  function findUpRight(i) {
-    let n = findUp(i);
-    return n ? findRight(n) : null;
-  }
-
-  function findDownLeft(i) {
-    let n = findDown(i);
-    return n ? findLeft(n) : null;
-  }
-
-  function calcwinnerArray(forward, backward) {
-    let tmpArray = [i];
-    let count = 1;
-    function findCount(next) {
-      let n = i;
-      for (let j = 0; j < 4; j++) {
-        n = next(n);
-        if (n !== null && squares[n] && squares[n] === squares[i]) {
-          count++;
-          tmpArray.push(n);
-        } else {
-          break;
-        }
-      }
-    }
-
-    findCount(forward);
-    findCount(backward);
-    if (count >= 5) {
-      winnerArray = tmpArray.slice();
-      return true;
-    } else {
-      return false;
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return [a, b, c];
     }
   }
-  if (
-    calcwinnerArray(findUp, findDown) ||
-    calcwinnerArray(findLeft, findRight) ||
-    calcwinnerArray(findUpLeft, findDownRight) ||
-    calcwinnerArray(findUpRight, findDownLeft)
-  ) {
-    return winnerArray;
-  } else {
-    return null;
-  }
+  return null;
 }

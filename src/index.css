@@ -53,10 +53,3 @@ ol, ul {
     border-radius: 0.35em;
     background: rgb(210, 231, 19);
 }
-
-@media screen and (max-width: 600px) 
-{
-    .game-info {
-        max-width: 5em;
-    }
-}
