@@ -19,7 +19,7 @@ ol, ul {
 
 .square {
     background: #fff;
-    /* border: 1px solid blackxs; */
+    border: 1px solid #999;
     float: left;
     font-size: 24px;
     font-weight: bold;
@@ -29,7 +29,6 @@ ol, ul {
     padding: 0;
     text-align: center;
     width: 34px;
-    border-radius: 0.15em;
 }
 
 .square:focus {
@@ -47,9 +46,4 @@ ol, ul {
 
 .game-info {
     margin-left: 70px;
-}
-
-.move-list {
-    border-radius: 0.35em;
-    background: rgb(210, 231, 19);
 }
